@@ -1,34 +1,56 @@
-from vpython import *
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
-# scene.caption = """
-# 1 滑動鼠標滑輪進行zoom放大縮小
-# 2 點擊右鍵進行旋轉
-# """
+acc_max = 5.0
 
-side = 4.0
-thk = 0.3
-s2 = 2*side - thk
-s3 = 2*side + thk
 
-wallR = box(pos=vector( side, 0, 0), size=vector(thk, s2, s3), color = color.red)
-wallL = box(pos=vector(-side, 0, 0), size=vector(thk, s2, s3), color = color.red)
-wallB = box(pos=vector(0, -side, 0), size=vector(s3, thk, s3), color = color.blue)
-wallT = box(pos=vector(0, side, 0), size=vector(s3, thk, s3), color = color.blue)
-wallBK = box(pos=vector(0, 0, -side), size=vector(s2, s2, thk), color = color.gray(0.7))
+plt.ion()
+fig = plt.figure()
+ax_xy = fig.add_subplot(2, 2, 2)
+ax_xy.set_xlim([-acc_max, acc_max])
+ax_xy.set_xlabel('a_x')
+ax_xy.set_ylim([-acc_max, acc_max])
+ax_xy.set_ylabel('a_y')
 
-ball = sphere(color = color.green, radius = 0.4, make_trail=True, retain=200)
-ball.mass = 1.0
-ball.p = vector(-0.15, -0.23, +0.27)
 
-side = side - thk*0.5 - ball.radius
+ax_z = fig.add_subplot(2, 10, 18)
+ax_z.set_ylim([-acc_max, acc_max])
+ax_z.set_ylabel('a_z')
 
-dt = 0.3
-while True:
-    rate(200)
-    ball.pos = ball.pos + (ball.p/ball.mass)*dt
-    if not (side > ball.pos.x > -side):
-        ball.p.x = -ball.p.x
-    if not (side > ball.pos.y > -side):
-        ball.p.y = -ball.p.y
-    if not (side > ball.pos.z > -side):
-        ball.p.z = -ball.p.z
+ax_z.set_xlim([0, 1])
+
+
+ax = fig.add_subplot(1, 2, 1, projection='3d')
+ax.set_xlim3d([0.0, 10.0])
+ax.set_xlabel('X')
+
+ax.set_ylim3d([0.0, 10.0])
+ax.set_ylabel('Y')
+
+ax.set_zlim3d([0.0, 10.0])
+ax.set_zlabel('Z')
+
+X_range = 100
+x_input = [i*0.1 for i in range(X_range)]
+y_input = [i*0.1 for i in range(X_range)]
+z_input = [i*0.1 for i in range(X_range)]
+
+for k in range(X_range-1):
+    ax.plot(x_input[k:k+1], y_input[k:k+1], z_input[k:k+1], 'ro')
+
+    # ax_xy.plot()
+
+    plt.draw()
+    plt.pause(0.001)
+    if k % 50 == 0:
+        plt.cla()
+        ax.set_xlim3d([0.0, 10.0])
+        ax.set_xlabel('X')
+
+        ax.set_ylim3d([0.0, 10.0])
+        ax.set_ylabel('Y')
+
+        ax.set_zlim3d([0.0, 10.0])
+        ax.set_zlabel('Z')
+    
