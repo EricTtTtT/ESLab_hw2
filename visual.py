@@ -72,6 +72,7 @@ def refresh_plot(i):
         "gyroy": 765,
         "gyroz": 987
     })
+    print(data_sensor)
     i_data = json.loads(data_sensor)
     # x_acc = i_data["acceleratorx"]
     # y_acc = i_data["acceleratory"]
