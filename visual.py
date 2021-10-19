@@ -11,7 +11,7 @@ from numpy.core.einsumfunc import einsum
 acc_max = 10
 ani_window_sec = 5.0
 ani_interval = 100
-box_bound = 1000.0
+box_bound = 100.0
 moving_trail = 10
 
 fig = plt.figure()
@@ -73,12 +73,12 @@ def refresh_plot(i):
         "gyroz": 987
     })
     i_data = json.loads(data_sensor)
-    x_acc = i_data["acceleratorx"]
+    # x_acc = i_data["acceleratorx"]
     # y_acc = i_data["acceleratory"]
     # z_acc = i_data["acceleratorz"]
-    y_acc = 10
-    z_acc = 10
-    # z_acc = np.random.rand()*100
+    x_acc = (np.random.rand()-0.5)*100
+    y_acc = (np.random.rand()-0.5)*100
+    z_acc = (np.random.rand()-0.5)*100
     
     position["x"] += velocity["x"]*dt + x_acc*x_acc*dt/2
     velocity["x"] += x_acc*dt
