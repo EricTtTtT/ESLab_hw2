@@ -3,38 +3,52 @@ from matplotlib.animation import FuncAnimation
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import json
 
+# config
 acc_max = 10
-ani_t_scale = 5.0
-ani_interval = 200
-ani_total = ani_t_scale * 1000 / ani_interval
-
+ani_window_sec = 5.0
+ani_interval = 100
 
 fig = plt.figure()
 ax_x = fig.add_subplot(2, 3, 4)
 ax_y = fig.add_subplot(2, 3, 5)
 ax_z = fig.add_subplot(2, 3, 6)
 
-time_axis = np.array([i * ani_interval / 1000 for i in range(int(ani_total))])
-time_axis -= ani_t_scale
+ani_window_len = ani_window_sec * 1000 / ani_interval
+time_axis = np.array([i * ani_interval / 1000 for i in range(int(ani_window_len))])
+time_axis -= ani_window_sec
 
-
-# modify data here
-x_accelerator = np.random.rand(200) * 10
-y_accelerator = np.random.rand(200) * 10
-z_accelerator = np.random.rand(200) * 10
-x_data = collections.deque(np.zeros(int(ani_total)))
-y_data = collections.deque(np.zeros(int(ani_total)))
-z_data = collections.deque(np.zeros(int(ani_total)))
+x_data = collections.deque(np.zeros(int(ani_window_len)))
+y_data = collections.deque(np.zeros(int(ani_window_len)))
+z_data = collections.deque(np.zeros(int(ani_window_len)))
 
 def refresh_plot(i):
     global ani_interval
     global time_axis
 
+    # read and parse data
+    # data = serial.readline()
+    # data_sensor = data.decode('utf8')
+    data_sensor = json.dumps({
+        "acceleratorx": 12,
+        "acceleratory": 123,
+        "acceleratorz": 456,
+        "gyrox" : 789,
+        "gyroy": 765,
+        "gyroz": 987
+    })
+    i_data = json.loads(data_sensor)
+    i_acc_x = i_data["acceleratorx"]
+    # i_acc_y = i_data["acceleratory"]
+    # i_acc_z = i_data["acceleratorz"]
+    i_acc_y = np.random.rand()*100
+    i_acc_z = np.random.rand()*100
+
     time_axis += ani_interval/1000
 
     x_data.popleft()
-    x_data.append(x_accelerator[i])
+    x_data.append(i_acc_x)
     ax_x.cla()
     ax_x.set_xlabel('time')
     ax_x.set_xlim(time_axis[0], time_axis[-1])
@@ -43,7 +57,7 @@ def refresh_plot(i):
     ax_x.plot(time_axis, x_data)
 
     y_data.popleft()
-    y_data.append(y_accelerator[i])
+    y_data.append(i_acc_y)
     ax_y.cla()
     ax_y.set_xlabel('time')
     ax_y.set_xlim(time_axis[0], time_axis[-1])
@@ -52,7 +66,7 @@ def refresh_plot(i):
     ax_y.plot(time_axis, y_data)
     
     z_data.popleft()
-    z_data.append(z_accelerator[i])
+    z_data.append(i_acc_z)
     ax_z.cla()
     ax_z.set_xlabel('time')
     ax_z.set_xlim(time_axis[0], time_axis[-1])
