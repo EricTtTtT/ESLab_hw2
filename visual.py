@@ -12,11 +12,10 @@ import time
 HOST = '192.168.41.105'
 PORT = 7414
 
-acc_max = 10
 ani_window_sec = 5.0
 ani_interval = 100
-box_bound = 100.0
-moving_trail = 3
+box_bound = 2000.0
+moving_trail = 5
 
 
 
