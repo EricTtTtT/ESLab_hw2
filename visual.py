@@ -4,15 +4,47 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import json
+import socket
+import time
 
-from numpy.core.einsumfunc import einsum
 
 # config
+HOST = '192.168.41.105'
+PORT = 7414
+
 acc_max = 10
 ani_window_sec = 5.0
 ani_interval = 100
 box_bound = 100.0
-moving_trail = 10
+moving_trail = 3
+
+
+
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+s.bind((HOST, PORT))
+s.listen(5)
+
+print('server start at: %s:%s' % (HOST, PORT))
+print('wait for connection...')
+conn, addr = s.accept()
+print('connected by ' + str(addr))
+
+
+# while True:
+#     conn, addr = s.accept()
+#     print('connected by ' + str(addr))
+
+#     while True:
+#         indata = conn.recv(8192)
+#         if len(indata) == 0: # connection closed
+#             conn.close()
+#             print('client closed connection.')
+#             break
+#         print('recv: ' + indata.decode())
+
+
 
 fig = plt.figure()
 ax = fig.add_subplot(2, 1, 1, projection='3d')
@@ -59,27 +91,33 @@ z_position = collections.deque(np.zeros(moving_trail))
 def refresh_plot(i):
     global ani_interval
     global time_axis
-    global x_pos, y_pos, z_pos, x_v, y_v, z_v
 
     # read and parse data
-    # data = serial.readline()
-    # data_sensor = data.decode('utf8')
-    data_sensor = json.dumps({
-        "acceleratorx": 12,
-        "acceleratory": 123,
-        "acceleratorz": 456,
-        "gyrox" : 789,
-        "gyroy": 765,
-        "gyroz": 987
-    })
-    print(data_sensor)
-    i_data = json.loads(data_sensor)
-    # x_acc = i_data["acceleratorx"]
-    # y_acc = i_data["acceleratory"]
-    # z_acc = i_data["acceleratorz"]
-    x_acc = (np.random.rand()-0.5)*100
-    y_acc = (np.random.rand()-0.5)*100
-    z_acc = (np.random.rand()-0.5)*100
+    indata = conn.recv(8192)
+    if len(indata) == 0: # connection closed
+        conn.close()
+        print('client closed connection.')
+        exit()
+
+    i_data = indata.decode()
+    print('recv: ' + i_data)
+    x_acc = i_data["acceleratorx"]
+    y_acc = i_data["acceleratory"]
+    z_acc = i_data["acceleratorz"]
+
+    ## emulate i_data
+    # data_sensor = json.dumps({
+    #     "acceleratorx": 12,
+    #     "acceleratory": 123,
+    #     "acceleratorz": 456,
+    #     "gyrox" : 789,
+    #     "gyroy": 765,
+    #     "gyroz": 987
+    # })
+    # i_data = json.loads(data_sensor)
+    # x_acc = (np.random.rand()-0.5)*100
+    # y_acc = (np.random.rand()-0.5)*100
+    # z_acc = (np.random.rand()-0.5)*100
     
     position["x"] += velocity["x"]*dt + x_acc*x_acc*dt/2
     velocity["x"] += x_acc*dt
