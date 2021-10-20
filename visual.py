@@ -13,11 +13,12 @@ HOST = '192.168.41.105'
 PORT = 7414
 
 ani_window_sec = 5.0
-ani_interval = 100
-box_bound = 2000.0
+ani_interval = 200
+acceleration_max = 400
+box_bound = 20000.0
 moving_trail = 5
 
-fake_data = True
+fake_data = False
 
 
 if not fake_data:
@@ -88,7 +89,7 @@ def refresh_plot(i):
 
     # read and parse data
     if not fake_data:
-        indata = conn.recv(8192)
+        indata = conn.recv(1<<13)
         if len(indata) == 0: # connection closed
             conn.close()
             print('client closed connection.')
@@ -126,6 +127,7 @@ def refresh_plot(i):
     ax_x.set_xlabel('time')
     ax_x.set_xlim(time_axis[0], time_axis[-1])
     ax_x.set_ylabel('x-axis acceleration')
+    ax_x.set_ylim(-acceleration_max, acceleration_max)
     ax_x.plot(time_axis, x_data)
 
     y_data.popleft()
@@ -134,6 +136,7 @@ def refresh_plot(i):
     ax_y.set_xlabel('time')
     ax_y.set_xlim(time_axis[0], time_axis[-1])
     ax_y.set_ylabel('y-axis acceleration')
+    ax_y.set_ylim(-acceleration_max, acceleration_max)
     ax_y.plot(time_axis, y_data)
     
     z_data.popleft()
@@ -142,6 +145,7 @@ def refresh_plot(i):
     ax_z.set_xlabel('time')
     ax_z.set_xlim(time_axis[0], time_axis[-1])
     ax_z.set_ylabel('z-axis acceleration')
+    ax_z.set_ylim(-acceleration_max, acceleration_max)
     ax_z.plot(time_axis, z_data)
 
     x_data_gyro.popleft()
