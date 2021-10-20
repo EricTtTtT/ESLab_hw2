@@ -17,39 +17,29 @@ ani_interval = 100
 box_bound = 2000.0
 moving_trail = 5
 
+fake_data = True
 
 
+if not fake_data:
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    s.bind((HOST, PORT))
+    s.listen(5)
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-s.bind((HOST, PORT))
-s.listen(5)
-
-print('server start at: %s:%s' % (HOST, PORT))
-print('wait for connection...')
-conn, addr = s.accept()
-print('connected by ' + str(addr))
-
-
-# while True:
-#     conn, addr = s.accept()
-#     print('connected by ' + str(addr))
-
-#     while True:
-#         indata = conn.recv(8192)
-#         if len(indata) == 0: # connection closed
-#             conn.close()
-#             print('client closed connection.')
-#             break
-#         print('recv: ' + indata.decode())
-
+    print('server start at: %s:%s' % (HOST, PORT))
+    print('wait for connection...')
+    conn, addr = s.accept()
+    print('connected by ' + str(addr))
 
 
 fig = plt.figure()
-ax = fig.add_subplot(2, 1, 1, projection='3d')
-ax_x = fig.add_subplot(2, 3, 4)
-ax_y = fig.add_subplot(2, 3, 5)
-ax_z = fig.add_subplot(2, 3, 6)
+ax = fig.add_subplot(2, 2, 1, projection='3d')
+ax_x = fig.add_subplot(4, 4, 13)
+ax_y = fig.add_subplot(4, 4, 14)
+ax_z = fig.add_subplot(4, 4, 15)
+ax_gyro_x = fig.add_subplot(4, 4, 4)
+ax_gyro_y = fig.add_subplot(4, 4, 8)
+ax_gyro_z = fig.add_subplot(4, 4, 12)
 
 # create time axis
 ani_window_len = ani_window_sec * 1000 / ani_interval
@@ -60,6 +50,9 @@ time_axis -= ani_window_sec
 x_data = collections.deque(np.zeros(int(ani_window_len)))
 y_data = collections.deque(np.zeros(int(ani_window_len)))
 z_data = collections.deque(np.zeros(int(ani_window_len)))
+x_data_gyro = collections.deque(np.zeros(int(ani_window_len)))
+y_data_gyro = collections.deque(np.zeros(int(ani_window_len)))
+z_data_gyro = collections.deque(np.zeros(int(ani_window_len)))
 
 
 # plot 3d moving
@@ -80,6 +73,7 @@ position = {
     "z": 0.0
 }
 dt = ani_interval / 1000
+dtdt_2 = dt*dt/2
 
 # postition buffer
 x_position = collections.deque(np.zeros(moving_trail))
@@ -91,38 +85,35 @@ def refresh_plot(i):
     global ani_interval
     global time_axis
 
+
     # read and parse data
-    indata = conn.recv(8192)
-    if len(indata) == 0: # connection closed
-        conn.close()
-        print('client closed connection.')
-        exit()
-
-    i_data = json.loads(indata.decode())
-    #print('recv: ' + i_data)
-    x_acc = i_data["accellerox"]
-    y_acc = i_data["accelleroy"]
-    z_acc = i_data["accelleroz"]
-
-    ## emulate i_data
-    # data_sensor = json.dumps({
-    #     "acceleratorx": 12,
-    #     "acceleratory": 123,
-    #     "acceleratorz": 456,
-    #     "gyrox" : 789,
-    #     "gyroy": 765,
-    #     "gyroz": 987
-    # })
-    # i_data = json.loads(data_sensor)
-    # x_acc = (np.random.rand()-0.5)*100
-    # y_acc = (np.random.rand()-0.5)*100
-    # z_acc = (np.random.rand()-0.5)*100
+    if not fake_data:
+        indata = conn.recv(8192)
+        if len(indata) == 0: # connection closed
+            conn.close()
+            print('client closed connection.')
+            exit()
+        i_data = json.loads(indata.decode())
+        x_acc = i_data["accelerox"]
+        y_acc = i_data["acceleroy"]
+        z_acc = i_data["acceleroz"]
+        x_gyro = i_data["gyrox"]
+        y_gyro = i_data["gyroy"]
+        z_gyro = i_data["gyroz"]
+    else:
+        # emulate i_data
+        x_acc = (np.random.rand()-0.5)*1000
+        y_acc = (np.random.rand()-0.5)*1000
+        z_acc = (np.random.rand()-0.5)*1000
+        x_gyro = (np.random.rand()-0.5)*1000
+        y_gyro = (np.random.rand()-0.5)*1000
+        z_gyro = (np.random.rand()-0.5)*1000
     
-    position["x"] += velocity["x"]*dt + x_acc*x_acc*dt/2
+    position["x"] += velocity["x"]*dt + x_acc*dtdt_2
     velocity["x"] += x_acc*dt
-    position["y"] += velocity["y"]*dt + y_acc*y_acc*dt/2
-    velocity["y"] += x_acc*dt
-    position["z"] += velocity["z"]*dt + z_acc*z_acc*dt/2
+    position["y"] += velocity["y"]*dt + y_acc*dtdt_2
+    velocity["y"] += y_acc*dt
+    position["z"] += velocity["z"]*dt + z_acc*dtdt_2
     velocity["z"] += z_acc*dt
 
 
@@ -134,7 +125,7 @@ def refresh_plot(i):
     ax_x.cla()
     ax_x.set_xlabel('time')
     ax_x.set_xlim(time_axis[0], time_axis[-1])
-    ax_x.set_ylabel('x-axis accelerator')
+    ax_x.set_ylabel('x-axis acceleration')
     ax_x.plot(time_axis, x_data)
 
     y_data.popleft()
@@ -142,7 +133,7 @@ def refresh_plot(i):
     ax_y.cla()
     ax_y.set_xlabel('time')
     ax_y.set_xlim(time_axis[0], time_axis[-1])
-    ax_y.set_ylabel('y-axis accelerator')
+    ax_y.set_ylabel('y-axis acceleration')
     ax_y.plot(time_axis, y_data)
     
     z_data.popleft()
@@ -150,8 +141,32 @@ def refresh_plot(i):
     ax_z.cla()
     ax_z.set_xlabel('time')
     ax_z.set_xlim(time_axis[0], time_axis[-1])
-    ax_z.set_ylabel('z-axis accelerator')
+    ax_z.set_ylabel('z-axis acceleration')
     ax_z.plot(time_axis, z_data)
+
+    x_data_gyro.popleft()
+    x_data_gyro.append(x_gyro)
+    ax_gyro_x.cla()
+    ax_gyro_x.set_xlabel('time')
+    ax_gyro_x.set_xlim(time_axis[0], time_axis[-1])
+    ax_gyro_x.set_ylabel('x-axis gyro')
+    ax_gyro_x.plot(time_axis, x_data_gyro)
+
+    y_data_gyro.popleft()
+    y_data_gyro.append(y_gyro)
+    ax_gyro_y.cla()
+    ax_gyro_y.set_xlabel('time')
+    ax_gyro_y.set_xlim(time_axis[0], time_axis[-1])
+    ax_gyro_y.set_ylabel('y-axis gyro')
+    ax_gyro_y.plot(time_axis, y_data_gyro)
+
+    z_data_gyro.popleft()
+    z_data_gyro.append(z_gyro)
+    ax_gyro_z.cla()
+    ax_gyro_z.set_xlabel('time')
+    ax_gyro_z.set_xlim(time_axis[0], time_axis[-1])
+    ax_gyro_z.set_ylabel('z-axis gyro')
+    ax_gyro_z.plot(time_axis, z_data_gyro)
 
 
     # plot 3d position
