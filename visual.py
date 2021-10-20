@@ -99,11 +99,11 @@ def refresh_plot(i):
         print('client closed connection.')
         exit()
 
-    i_data = indata.decode()
-    print('recv: ' + i_data)
-    x_acc = i_data["acceleratorx"]
-    y_acc = i_data["acceleratory"]
-    z_acc = i_data["acceleratorz"]
+    i_data = json.loads(indata.decode())
+    #print('recv: ' + i_data)
+    x_acc = i_data["accellerox"]
+    y_acc = i_data["accelleroy"]
+    z_acc = i_data["accelleroz"]
 
     ## emulate i_data
     # data_sensor = json.dumps({
