@@ -13,7 +13,7 @@ HOST = '192.168.41.105'
 PORT = 7414
 
 ani_window_sec = 5.0
-ani_interval = 200
+ani_interval = 250
 acceleration_max = 400
 box_bound = 20000.0
 moving_trail = 5
@@ -89,11 +89,12 @@ def refresh_plot(i):
 
     # read and parse data
     if not fake_data:
-        indata = conn.recv(1<<13)
+        indata = conn.recv(1<<20)
         if len(indata) == 0: # connection closed
             conn.close()
             print('client closed connection.')
             exit()
+        print(indata.decode())
         i_data = json.loads(indata.decode())
         x_acc = i_data["accelerox"]
         y_acc = i_data["acceleroy"]
