@@ -49,7 +49,7 @@ class SocketDemo {
 #if MBED_CONF_APP_USE_TLS_SOCKET
     static constexpr size_t REMOTE_PORT = 443; // tls port
 #else
-    static constexpr size_t REMOTE_PORT = 7414; // standard HTTP port
+    static constexpr size_t REMOTE_PORT = 7414; // port number of my server
 #endif // MBED_CONF_APP_USE_TLS_SOCKET
 
 public:
@@ -154,10 +154,10 @@ public:
             printf("ACCELERO_Y = %d\n", pDataXYZ[1]);
             printf("ACCELERO_Z = %d\n", pDataXYZ[2]);
             char buffer [500];
-            int length = sprintf(buffer, "{\"accellerox\":%f,\"accelleroy\":%f,\"accelleroz\":%f,\"gyrox\":%f,\"gyroy\":%f,\"gyroz\":%f}",
+            int length = sprintf(buffer, "{\"accelerox\":%f,\"acceleroy\":%f,\"acceleroz\":%f,\"gyrox\":%f,\"gyroy\":%f,\"gyroz\":%f}",
                             (float)((int)(pDataXYZ[0]*10000))/10000,
                             (float)((int)(pDataXYZ[1]*10000))/10000, 
-                            (float)((int)(pDataXYZ[2]*10000))/10000,
+                            (float)((int)(pDataXYZ[2]*10000))/10000 - 1000,
                             pGyroDataXYZ[0],
                             pGyroDataXYZ[1],
                             pGyroDataXYZ[2]);
@@ -165,7 +165,7 @@ public:
 
             nsapi_size_t bytes_to_send = strlen(buffer);
             nsapi_size_or_error_t bytes_sent = 0;
-
+            
             printf("\r\nSending message: \r\n%s", buffer);
 
             while (bytes_to_send) {
@@ -178,9 +178,9 @@ public:
 
                 bytes_to_send -= bytes_sent;
             }
-
+            ThisThread::sleep_for(500);
             printf("Complete message sent\r\n");
-            ThisThread::sleep_for(3000);
+            
 
         }
         printf("Demo concluded successfully \r\n");
