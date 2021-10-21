@@ -17,7 +17,7 @@ gyroscope of B-L475E-IOT01A2 to a Python socket server hosted on Windows10.
 1.  Move the subfolder of the example project of “DISCO_L475VG_IOT01-Sensors-BSP”  
     under “mbed-os-example-sockets”.
 2.  Modify the default port number to the port number opened on our server  
-    ![Imgur](https://i.imgur.com/c1L941o.png)
+    ![Imgur](https://i.imgur.com/lhPS9Tv.png)
 3.  Modify the host name of the “mbed_app.json”  
     ![Imgur](https://i.imgur.com/TikVwRA.png)
 4.  Merge some of the code in the main.cpp of the sensor example into  
