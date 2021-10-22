@@ -30,5 +30,6 @@ gyroscope of B-L475E-IOT01A2 to a Python socket server hosted on Windows10.
     dimensions.   
     In addition, we provide a three dimensional model to display the relative position  
     of the board. Moreover, we display the three dimensions of the gyro with three charts.
+    ![Imgur](https://i.imgur.com/bkk1j5E.png)
 
 
